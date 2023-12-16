@@ -1,0 +1,5 @@
+{
+    "code-runner.executorMap": {
+        "cpp": "cd $dir && g++ -std=c++20 -I E:\\program\\msys64\\mingw64\\include -g '$fileName' -o \"$fileNameWithoutExt\" -lgmp -lgmpxx && . ./'$fileNameWithoutExt'",
+    }
+}
