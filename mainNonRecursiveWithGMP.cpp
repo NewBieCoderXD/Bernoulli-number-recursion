@@ -90,16 +90,24 @@ struct Fraction{
 
 mpz_class C(std::vector<std::vector<mpz_class>>& memoizC,int n,int k){
     k=std::min(k,n-k);
-    // std::cout<<"C n: "<<n<<" k: "<<k<<'\n';
-    if(k==0){
-        return 1;
-    }
-    if(memoizC[n][k]!=0){
-        return memoizC[n][k];
-    }
-    memoizC[n][k]=C(memoizC,n-1,k)+C(memoizC,n-1,k-1);
     return memoizC[n][k];
 }
+
+void fillC(std::vector<std::vector<mpz_class>>& memoizC,int n){
+    // std::cout<<"C n: "<<n<<" k: "<<k<<'\n';
+    for(int i=1;i<=n;i++){
+        memoizC[i][0]=1;
+        for(int j=1;j<memoizC[i].size();j++){
+            memoizC[i][j]=C(memoizC,i-1,j-1)+C(memoizC,i-1,j);
+        }
+    }
+    // memoizC[n][0]=1;
+    // // std::cout<<std::min(k,n-1-k)<<" "<<std::min(k-1,n-k)<<"\n";
+    // memoizC[n][k]=memoizC[n-1][std::min(k,n-1-k)]+memoizC[n-1][std::min(k-1,n-k)];
+    // return memoizC[n][k];
+}
+
+
 
 Fraction B(std::vector<Fraction>& memoizB,std::vector<std::vector<mpz_class>>& memoizC,int n){
     if(memoizB[n].denominator!=0){
@@ -107,15 +115,26 @@ Fraction B(std::vector<Fraction>& memoizB,std::vector<std::vector<mpz_class>>& m
         return memoizB[n];
     }
     // std::cout<<"n of B: "<<n<<"\n";
-    Fraction answer(0,1);
     if(n%2!=0&&n>=3){
-        return answer;
+        return Fraction(0,1);
     }
-    for(ll i=0;i<n;i++){
-        // std::cout<<"n: "<<n<<" i: "<<i<<'\n';
-        answer-=B(memoizB,memoizC,i)*mpz_class(C(memoizC,n+1,i));
+    for(int i=1;i<=n;i++){
+        if(i%2!=0&&i>3){
+            memoizB[i]=Fraction(0,1);
+            continue;
+        }
+        Fraction answer(0,1);
+        for(int j=0;j<i;j++){
+            // std::cout<<"n: "<<n<<" i: "<<i<<'\n';
+            Fraction b=memoizB[j];
+            if(b.numerator==0){
+                continue;
+            }
+            // std::cout<<"C: "<<i+1<<" "<<j<<" value: "<<C(memoizC,i+1,j)<<"\n";
+            answer-=b*mpz_class(C(memoizC,i+1,j));
+        }
+        memoizB[i]=(answer/(i+1)).toProper();
     }
-    memoizB[n]=(answer/(n+1)).toProper();
     return memoizB[n];
 }
 
@@ -123,6 +142,7 @@ int main(int argc, char **argv){
     int n;
     if(argc==1){
         std::cin>>n;
+        // n=6;
     }
     else{
         n=std::strtol(argv[1],nullptr,10);
@@ -135,8 +155,7 @@ int main(int argc, char **argv){
     }
     memoizC[1][0]=1;
     memoizB[0]=Fraction(1,1);
-    // std::cout<<Fraction(1,2)<<"\n";
-    // std::cout<<C(memoizC,4,2)<<"\n";
+    fillC(memoizC,n+1);
     std::cout<<B(memoizB,memoizC,n)<<"\n";
     // for(int i=0;i<memoizB.size();i++){
     //     std::cout<<"n: "<<i<<" memoizB: "<<memoizB[i]<<"\n";
